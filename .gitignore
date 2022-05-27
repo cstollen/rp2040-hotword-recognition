@@ -1,0 +1,8 @@
+**/build
+**/.vscode
+**/.pio
+tools/**
+cert/cert.pem
+cert/key.pem
+config.ini
+
