@@ -61,6 +61,20 @@ void log_printf(const char* s) {
 #endif
 }
 
+void wifininaFirmwareCheck() {
+	String wifinina_fv = WiFi.firmwareVersion();
+	String wifinina_latest_fv = WIFI_FIRMWARE_LATEST_VERSION;
+
+	if (wifinina_fv < wifinina_latest_fv) {
+		Serial.print("WifiNINA installed firmware version: ");
+		Serial.println(wifinina_fv);
+		Serial.print("WifiNINA latest firmware version available: ");
+		Serial.println(wifinina_latest_fv);
+		Serial.println("Please update WifiNINA firmware version.");
+		Serial.println();
+	}
+}
+
 // The name of this function is important for Arduino compatibility.
 void setup() {
 	// Init leds
@@ -73,6 +87,8 @@ void setup() {
 	while (!Serial)
 		;
 	digitalWrite(LED_BUILTIN, LOW);
+	// Check wifiNINA firmware version
+	wifininaFirmwareCheck();
 	Serial.println("Started");
 
 	// Initialize WiFi and SSL connection
