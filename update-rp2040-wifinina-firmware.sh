@@ -1,6 +1,6 @@
 #! /bin/bash
 
-if [ ! -f "tools/arduino-fwuploader/arduino-fwuploader" ]; then
+if [[ ! -f "tools/arduino-fwuploader/arduino-fwuploader" ]]; then
 	echo "Arduino firmware updater not found. Please run 'install-dependencies.sh'"
 	exit 1
 fi

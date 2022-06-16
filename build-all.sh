@@ -8,7 +8,7 @@ echo ""
 echo ""
 echo "Building SSL Server"
 cd ssl-server
-if [ ! -d "build" ]; then
+if [[ ! -d "build" ]]; then
   mkdir build
 fi
 cd build
