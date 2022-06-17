@@ -23,6 +23,9 @@ void RespondToCommand(tflite::ErrorReporter* error_reporter, SSLClient* client, 
                       const char* found_command, uint8_t score, bool is_new_command) {
 	if (is_new_command) {
 		TF_LITE_REPORT_ERROR(error_reporter, "Heard %s (%d) @%dms", found_command, score, current_time);
-		client->send(found_command);
+		// client->send(found_command); // just send the hotword
+		std::string message_string = "SECRET=" + std::string(found_command);
+		const char *message_cstr = message_string.c_str();
+		client->send(message_cstr); // send "SECRET=<hotword>"
 	}
 }

@@ -51,6 +51,7 @@ void SSLClient::init() {
 	printCurrentNet();
 	printWifiData();
 
+	// Debug ping server
 	// Serial.println("Attempting to connect to server");
 	// IPAddress server_ip;
 	// int err = WiFi.hostByName(server_url, server_ip);
@@ -70,21 +71,7 @@ void SSLClient::init() {
 	Serial.print(server_url);
 	Serial.print(":");
 	Serial.println(server_port);
-	// while (true) {
-	// 	if (wifi_ssl_client.connectSSL(server_url, server_port)) {
-	// 		Serial.print("Connected to ");
-	// 		Serial.print(server_url);
-	// 		Serial.print(":");
-	// 		Serial.println(server_port);
-	// 		break;
-	// 	} else {
-	// 		Serial.print("Could not connect to ");
-	// 		Serial.print(server_url);
-	// 		Serial.print(":");
-	// 		Serial.println(server_port);
-	// 		delay(2000);
-	// 	}
-	// }
+
 	while (!wifi_ssl_client.connectSSL(server_url, server_port)) {
 		Serial.print("Could not connect to ");
 		Serial.print(server_url);
