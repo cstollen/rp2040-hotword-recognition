@@ -1,8 +1,7 @@
-**/build
-**/.vscode
-**/.pio
-tools/**
-cert/cert.pem
-cert/key.pem
+build
+.vscode
+.pio
+tools
+cert
 config.ini
 

@@ -50,52 +50,118 @@ int8_t feature_buffer[kFeatureElementCount];
 int8_t* model_input_buffer = nullptr;
 }  // namespace
 
+// Network logging
+#include "netlog.h"
+// char* netlog_url = "10.42.0.1";
+char* netlog_url = SERVER_URL;
+const int netlog_port = 4444;
+const char* netlog_protocol = "UDP";
+bool netlog_tcp = false;
+const bool netlog_ssl = false;
+const bool enable_serial_connection = true;
+const bool enable_wait_for_serial = false;
+const bool enable_remote_logging = true;
+const bool enable_serial_logging = true;
+const bool netlog_verbose = true;
+const int netlog_retries = 10;
+NetLog* netlog = nullptr;
+void setupNetlog() {
+	// Network logging client
+	static NetLog static_netlog;
+	netlog = &static_netlog;
+	netlog->setRemoteLogging(enable_remote_logging);
+	netlog->setSerialLogging(enable_serial_logging);
+	if (netlog_protocol == "TCP") {
+		netlog_tcp = true;
+	}
+}
+void connectNetlog() {
+	// Connect network logger
+	if (netlog_ssl) {
+		netlog->setEnableTcp(netlog_tcp);
+		netlog->connectSSL(netlog_url, netlog_port);
+	} else {
+		netlog->openConnection(netlog_url, netlog_port, netlog_tcp, netlog_ssl, netlog_verbose, netlog_retries);
+	}
+}
+std::string concatLog() { return std::string(); };
+template <typename T, typename... Args>
+std::string concatLog(T first, Args... args) {
+	std::stringstream ss;
+	ss << first << concatLog(args...);
+	return ss.str();
+}
+template <typename... Args>
+void nlog(Args... args) {
+	netlog->nlog(args...);
+}
+
 // Custom log function
 #include <Arduino.h>
 #include "tensorflow/lite/micro/cortex_m_generic/debug_log_callback.h"
 void log_printf(const char* s) {
 #ifndef PRINTDATA
 	char buffer[80];
-	sprintf(buffer, s);
-	Serial.print(buffer);
+	// sprintf(buffer, s);
+	// Serial.print(buffer);
+	nlog(buffer);
 #endif
 }
 
+/*
 void wifininaFirmwareCheck() {
-	String wifinina_fv = WiFi.firmwareVersion();
-	String wifinina_latest_fv = WIFI_FIRMWARE_LATEST_VERSION;
+  String wifinina_fv = WiFi.firmwareVersion();
+  String wifinina_latest_fv = WIFI_FIRMWARE_LATEST_VERSION;
 
-	if (wifinina_fv < wifinina_latest_fv) {
-		Serial.print("WifiNINA installed firmware version: ");
-		Serial.println(wifinina_fv);
-		Serial.print("WifiNINA latest firmware version available: ");
-		Serial.println(wifinina_latest_fv);
-		Serial.println("Please update WifiNINA firmware version.");
-		Serial.println();
-	}
+  if (wifinina_fv < wifinina_latest_fv) {
+    Serial.print("WifiNINA installed firmware version: ");
+    Serial.println(wifinina_fv);
+    Serial.print("WifiNINA latest firmware version available: ");
+    Serial.println(wifinina_latest_fv);
+    Serial.println("Please update WifiNINA firmware version.");
+    Serial.println();
+  }
 }
+*/
 
 // The name of this function is important for Arduino compatibility.
 void setup() {
 	// Init leds
 	pinMode(LED_BUILTIN, OUTPUT);
-	// Custom debug log
-	Serial.begin(9600);
-	RegisterDebugLogCallback(log_printf);
-	// Wait for serial connection
 	digitalWrite(LED_BUILTIN, HIGH);
-	while (!Serial)
-		;
+
+	// Custom debug log
+	RegisterDebugLogCallback(log_printf);
+
+	// Serial connection
+	if (enable_serial_connection) {
+		Serial.begin(9600);
+		// Wait for serial connection
+		if (enable_wait_for_serial) {
+			while (!Serial)
+				;
+		}
+	} else {
+		delay(1000);
+	}
 	digitalWrite(LED_BUILTIN, LOW);
+
+	// Init network logging
+	setupNetlog();
+
 	// Check wifiNINA firmware version
-	wifininaFirmwareCheck();
-	Serial.println("Started");
+	// wifininaFirmwareCheck();
+	// Serial.println("Started");
+	nlog("Started");
 
 	// Initialize WiFi and SSL connection
 	static SSLClient static_ssl_client;
 	ssl_client = &static_ssl_client;
 
 	tflite::InitializeTarget();
+
+	// Start network logging
+	connectNetlog();
 
 	// Set up logging. Google style is to avoid globals or statics because of
 	// lifetime uncertainty, but since this has a trivial destructor it's okay.
