@@ -84,6 +84,7 @@ void connectNetlog() {
 		netlog->openConnection(netlog_url, netlog_port, netlog_tcp, netlog_ssl, netlog_verbose, netlog_retries);
 	}
 }
+/*
 std::string concatLog() { return std::string(); };
 template <typename T, typename... Args>
 std::string concatLog(T first, Args... args) {
@@ -91,6 +92,7 @@ std::string concatLog(T first, Args... args) {
 	ss << first << concatLog(args...);
 	return ss.str();
 }
+*/
 template <typename... Args>
 void nlog(Args... args) {
 	netlog->nlog(args...);
@@ -101,10 +103,12 @@ void nlog(Args... args) {
 #include "tensorflow/lite/micro/cortex_m_generic/debug_log_callback.h"
 void log_printf(const char* s) {
 #ifndef PRINTDATA
-	char buffer[80];
+	// char buffer[80];
 	// sprintf(buffer, s);
 	// Serial.print(buffer);
-	nlog(buffer);
+	// nlog(buffer);
+	// netlog->nlog(buffer);
+	netlog->nlog(s);
 #endif
 }
 
@@ -130,9 +134,6 @@ void setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
 	digitalWrite(LED_BUILTIN, HIGH);
 
-	// Custom debug log
-	RegisterDebugLogCallback(log_printf);
-
 	// Serial connection
 	if (enable_serial_connection) {
 		Serial.begin(9600);
@@ -146,18 +147,22 @@ void setup() {
 	}
 	digitalWrite(LED_BUILTIN, LOW);
 
+	// Initialize WiFi and SSL connection
+	static SSLClient static_ssl_client;
+	ssl_client = &static_ssl_client;
+
 	// Init network logging
 	setupNetlog();
+
+	// Custom debug log
+	RegisterDebugLogCallback(log_printf);
 
 	// Check wifiNINA firmware version
 	// wifininaFirmwareCheck();
 	// Serial.println("Started");
 	nlog("Started");
 
-	// Initialize WiFi and SSL connection
-	static SSLClient static_ssl_client;
-	ssl_client = &static_ssl_client;
-
+	// Initialize TFLM
 	tflite::InitializeTarget();
 
 	// Start network logging
